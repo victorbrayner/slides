@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{TITLE}}</title>
+  <link rel="stylesheet" href="{{ROOT}}style.css" />
+  <script src="{{ROOT}}theme.js" defer></script>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <a class="back" href="{{ROOT}}">← disciplinas</a>
+        <h1>{{DISCIPLINA}}</h1>
+        <p class="subtitle">{{UNIVERSIDADE}}</p>
+      </div>
+      <button id="theme-toggle" type="button">◐ claro</button>
+    </header>
+
+    <p class="meta">{{META}}</p>
+
+    <ul class="board" aria-label="Slides">
+      <li class="head" aria-hidden="true">
+        <span class="cell date">Data</span>
+        <span class="cell name">Título</span>
+        <span class="cell actions">Ações</span>
+      </li>
+{{ROWS}}
+    </ul>
+
+    <footer>
+      <span>prof. victor brayner · 2026</span>
+      <a href="https://brayner.dev">brayner.dev</a>
+    </footer>
+  </div>
+</body>
+</html>
