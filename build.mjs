@@ -1,7 +1,8 @@
 import { readdir, readFile, writeFile, mkdir, copyFile, rm } from "node:fs/promises";
-import { join, parse, relative } from "node:path";
+import { join, parse, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = new URL(".", import.meta.url).pathname;
+const ROOT = fileURLToPath(new URL(".", import.meta.url));
 const SLIDES_DIR = join(ROOT, "slides");
 const SRC_DIR = join(ROOT, "src");
 const ASSETS_DIR = join(ROOT, "assets");
@@ -9,7 +10,7 @@ const DIST_DIR = join(ROOT, "dist");
 
 const FILENAME_RE = /^(\d{4}-\d{2}-\d{2})--(.+)\.pdf$/;
 
-function slugify(text) {
+export function slugify(text) {
   return text
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
@@ -18,25 +19,25 @@ function slugify(text) {
     .replace(/^-+|-+$/g, "");
 }
 
-function titleize(slug) {
+export function titleize(slug) {
   return slug
     .split("-")
     .map((word, i) => (i === 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word))
     .join(" ");
 }
 
-function semesterOf(dateStr) {
+export function semesterOf(dateStr) {
   const month = Number(dateStr.slice(5, 7));
   const year = dateStr.slice(0, 4);
   return month <= 7 ? `${year}.1` : `${year}.2`;
 }
 
-function formatDate(dateStr) {
+export function formatDate(dateStr) {
   const [y, m, d] = dateStr.split("-");
   return `${d}/${m}/${y.slice(2)}`;
 }
 
-function esc(text) {
+export function esc(text) {
   return text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -44,20 +45,20 @@ function esc(text) {
     .replace(/"/g, "&quot;");
 }
 
-async function render(templateName, vars) {
-  let html = await readFile(join(SRC_DIR, templateName), "utf8");
+async function render(templatePath, vars) {
+  let html = await readFile(templatePath, "utf8");
   for (const [key, value] of Object.entries(vars)) {
     html = html.replaceAll(`{{${key}}}`, value);
   }
   return html;
 }
 
-async function scan() {
+export async function scan({ slidesDir } = {}) {
   const universities = [];
 
   let uniEntries;
   try {
-    uniEntries = await readdir(SLIDES_DIR, { withFileTypes: true });
+    uniEntries = await readdir(slidesDir ?? SLIDES_DIR, { withFileTypes: true });
   } catch {
     return universities;
   }
@@ -66,7 +67,7 @@ async function scan() {
     if (!uniEntry.isDirectory()) continue;
     const uniName = uniEntry.name;
     const uniSlug = slugify(uniName);
-    const uniPath = join(SLIDES_DIR, uniName);
+    const uniPath = join(slidesDir ?? SLIDES_DIR, uniName);
     const disciplines = [];
 
     const discEntries = await readdir(uniPath, { withFileTypes: true });
@@ -123,20 +124,31 @@ async function scan() {
   return universities;
 }
 
-async function build() {
-  await rm(DIST_DIR, { recursive: true, force: true });
-  await mkdir(DIST_DIR, { recursive: true });
+export async function build({
+  slidesDir,
+  srcDir,
+  assetsDir,
+  distDir,
+  silent = false,
+} = {}) {
+  const resolvedSlidesDir = slidesDir ?? SLIDES_DIR;
+  const resolvedSrcDir = srcDir ?? SRC_DIR;
+  const resolvedAssetsDir = assetsDir ?? ASSETS_DIR;
+  const resolvedDistDir = distDir ?? DIST_DIR;
 
-  const universities = await scan();
+  await rm(resolvedDistDir, { recursive: true, force: true });
+  await mkdir(resolvedDistDir, { recursive: true });
+
+  const universities = await scan({ slidesDir: resolvedSlidesDir });
 
   // assets estáticos
-  await mkdir(join(DIST_DIR, "assets"), { recursive: true });
+  await mkdir(join(resolvedDistDir, "assets"), { recursive: true });
   await copyFile(
-    join(ASSETS_DIR, "DepartureMono-Regular.woff2"),
-    join(DIST_DIR, "assets", "DepartureMono-Regular.woff2")
+    join(resolvedAssetsDir, "DepartureMono-Regular.woff2"),
+    join(resolvedDistDir, "assets", "DepartureMono-Regular.woff2")
   );
-  await copyFile(join(SRC_DIR, "style.css"), join(DIST_DIR, "style.css"));
-  await copyFile(join(SRC_DIR, "theme.js"), join(DIST_DIR, "theme.js"));
+  await copyFile(join(resolvedSrcDir, "style.css"), join(resolvedDistDir, "style.css"));
+  await copyFile(join(resolvedSrcDir, "theme.js"), join(resolvedDistDir, "theme.js"));
 
   const allDisciplines = universities.flatMap((uni) =>
     uni.disciplines.map((disc) => ({ uni, disc }))
@@ -159,17 +171,17 @@ async function build() {
     )
     .join("\n");
 
-  const indexHtml = await render("index.template.html", {
+  const indexHtml = await render(join(resolvedSrcDir, "index.template.html"), {
     TITLE: "Materiais de Aula — Prof. Victor Brayner",
     ROWS: rows || '      <p class="comment">// nenhum slide publicado ainda</p>',
     META: `// ${allDisciplines.length} disciplinas · ${totalSlides} slides`,
     ROOT: "",
   });
-  await writeFile(join(DIST_DIR, "index.html"), indexHtml);
+  await writeFile(join(resolvedDistDir, "index.html"), indexHtml);
 
   // páginas de disciplina
   for (const { uni, disc } of allDisciplines) {
-    const outDir = join(DIST_DIR, disc.path);
+    const outDir = join(resolvedDistDir, disc.path);
     await mkdir(outDir, { recursive: true });
 
     const slideRows = disc.slides
@@ -185,7 +197,7 @@ async function build() {
       )
       .join("\n");
 
-    const html = await render("disciplina.template.html", {
+    const html = await render(join(resolvedSrcDir, "disciplina.template.html"), {
       TITLE: `${disc.name} — ${uni.name}`,
       DISCIPLINA: esc(disc.name),
       UNIVERSIDADE: esc(uni.name),
@@ -198,15 +210,22 @@ async function build() {
     // copia os PDFs
     for (const slide of disc.slides) {
       await copyFile(
-        join(SLIDES_DIR, uni.name, disc.name, slide.file),
-        join(DIST_DIR, slide.href)
+        join(resolvedSlidesDir, uni.name, disc.name, slide.file),
+        join(resolvedDistDir, slide.href)
       );
     }
   }
 
-  console.log(
-    `✓ ${allDisciplines.length} disciplinas, ${totalSlides} slides → dist/`
-  );
+  if (!silent) {
+    console.log(
+      `✓ ${allDisciplines.length} disciplinas, ${totalSlides} slides → dist/`
+    );
+  }
+
+  return { universities, allDisciplines, totalSlides };
 }
 
-build();
+const isMain = process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
+if (isMain) {
+  build();
+}
