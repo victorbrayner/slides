@@ -4,6 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{{TITLE}}</title>
+  <script>
+    // aplica o tema salvo antes do primeiro paint (evita flash de tema errado)
+    (function () {
+      try {
+        var theme = localStorage.getItem("theme");
+        if (theme !== "light" && theme !== "dark") {
+          theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark";
+        }
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (e) {}
+    })();
+  </script>
   <link rel="stylesheet" href="{{ROOT}}style.css" />
   <script src="{{ROOT}}theme.js" defer></script>
 </head>
@@ -15,19 +29,22 @@
         <h1>{{DISCIPLINA}}</h1>
         <p class="subtitle">{{UNIVERSIDADE}}</p>
       </div>
-      <button id="theme-toggle" type="button">◐ claro</button>
+      <button id="theme-toggle" type="button" aria-label="Alternar tema claro e escuro">◐ claro</button>
     </header>
 
-    <p class="meta">{{META}}</p>
-
-    <ul class="board" aria-label="Slides">
-      <li class="head" aria-hidden="true">
-        <span class="cell date">Data</span>
-        <span class="cell name">Título</span>
-        <span class="cell actions">Ações</span>
-      </li>
+    <table class="board board-slides">
+      <caption class="meta">{{META}}</caption>
+      <thead>
+        <tr>
+          <th scope="col" class="date">Data</th>
+          <th scope="col" class="name">Título</th>
+          <th scope="col" class="actions">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
 {{ROWS}}
-    </ul>
+      </tbody>
+    </table>
 
     <footer>
       <span>prof. victor brayner · 2026</span>

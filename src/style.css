@@ -8,8 +8,8 @@
   --amber: #ffa133;
   --enamel: #eeeeee;
   --cement: #c0c0c0;
-  --ash: #8e8e8e;
-  --clay: #6c6c58;
+  --ash: #6a6a6a;
+  --clay: #8f8f7a;
   --dark: #444444;
   --carbon: #222222;
   --accent: var(--amber);
@@ -30,6 +30,7 @@
   --muted: var(--ash);
   --row-hover: #e2e2e2;
   --border: #d4d4d4;
+  --accent: #9c5a00;
 }
 
 * {
@@ -56,6 +57,12 @@ body {
   background-color: var(--fg);
 }
 
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .wrap {
   max-width: 880px;
   margin: 0 auto;
@@ -78,10 +85,12 @@ h1 {
 }
 
 .back {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   color: var(--muted);
   text-decoration: none;
-  margin-bottom: 11px;
+  margin-bottom: 6px;
 }
 
 .back:hover {
@@ -99,7 +108,8 @@ h1 {
   color: var(--muted);
   background: transparent;
   border: 1px solid var(--border);
-  padding: 4px 11px;
+  padding: 10px 14px;
+  min-height: 44px;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -109,109 +119,135 @@ h1 {
   border-color: var(--accent);
 }
 
-.meta {
+.comment {
   color: var(--muted);
-  margin-bottom: 22px;
 }
+
+/* ── tabela ─────────────────────────────────────────────── */
 
 .board {
-  display: flex;
-  flex-direction: column;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
 }
 
-.head {
-  display: flex;
-  gap: 22px;
+.board caption.meta {
+  caption-side: top;
+  text-align: left;
   color: var(--muted);
-  text-transform: uppercase;
-  font-size: 1.1rem;
-  padding-bottom: 6px;
+  padding-bottom: 22px;
+}
+
+.board th,
+.board td {
+  font-weight: normal;
+  text-align: left;
+  vertical-align: baseline;
+  padding: 11px 22px 11px 0;
   border-bottom: 1px solid var(--border);
-}
-
-.row {
-  display: flex;
-  gap: 22px;
-  align-items: baseline;
-  padding: 11px 0;
-  border-bottom: 1px solid var(--border);
-  color: var(--fg);
-}
-
-.row:hover {
-  background-color: var(--row-hover);
-}
-
-.cell {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.head .cell,
-.row .cell {
-  flex-shrink: 0;
+.board th:last-child,
+.board td:last-child {
+  padding-right: 0;
 }
 
-.cell.board-link {
-  width: 3ch;
-  text-decoration: none;
-  color: var(--fg);
+.board thead th {
+  color: var(--muted);
+  text-transform: uppercase;
+  font-size: 1.1rem;
+  padding-top: 0;
+  padding-bottom: 6px;
 }
 
-.cell.board-link:hover {
-  color: var(--accent);
-}
-
-.cell.name {
-  flex: 2 1 0;
-  min-width: 0;
-}
-
-.cell.uni {
-  flex: 1.5 1 0;
-  min-width: 0;
-}
-
-.cell.sem {
-  width: 6ch;
+.board .sem,
+.board .count,
+.board .date {
   text-align: right;
 }
 
-.cell.count {
-  width: 6ch;
-  text-align: right;
-}
-
-.cell.date {
-  width: 8ch;
-  text-align: right;
+.board .date {
   color: var(--muted);
 }
 
-.cell.actions {
-  width: 14ch;
-  text-align: right;
-  display: flex;
-  gap: 11px;
-  justify-content: flex-end;
+/* larguras das colunas (table-layout: fixed mantém tudo alinhado) */
+.board-index .name { width: 38%; }
+.board-index .uni { width: 25%; }
+.board-index .sem { width: 11%; }
+.board-index .count { width: 11%; }
+.board-index .date { width: 15%; }
+
+.board-slides .date { width: 15%; }
+.board-slides .name { width: 65%; }
+.board-slides .actions { width: 20%; }
+
+/* ── linhas clicáveis ───────────────────────────────────── */
+
+.board tbody tr {
+  position: relative;
+  cursor: pointer;
 }
 
-.cell.actions a {
+.board tbody th.name a {
   color: var(--fg);
   text-decoration: none;
 }
 
-.cell.actions a:hover {
-  color: var(--accent);
+/* link esticado: a linha inteira vira alvo de clique */
+.board tbody th.name a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
 }
 
-.comment {
-  color: var(--muted);
+@media (hover: hover) {
+  .board tbody tr:hover {
+    background-color: var(--row-hover);
+  }
+
+  .board tbody tr:hover th.name a {
+    color: var(--accent);
+  }
 }
 
-ul.board {
-  list-style: none;
+.board tbody tr:has(a:focus-visible) {
+  background-color: var(--row-hover);
+}
+
+/* ── ações ──────────────────────────────────────────────── */
+
+.board .actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.board .actions a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 8px;
+  color: var(--fg);
+  text-decoration: none;
+  /* mantém os alvos clicáveis acima do link esticado da linha */
+  position: relative;
+  z-index: 1;
+}
+
+.board .actions a:first-child {
+  padding-left: 0;
+}
+
+.board .actions a:last-child {
+  padding-right: 0;
+}
+
+@media (hover: hover) {
+  .board .actions a:hover {
+    color: var(--accent);
+  }
 }
 
 footer {
@@ -226,6 +262,9 @@ footer {
 }
 
 footer a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   color: var(--muted);
   text-decoration: none;
 }
@@ -233,6 +272,8 @@ footer a {
 footer a:hover {
   color: var(--accent);
 }
+
+/* ── mobile: cada linha vira um cartão com rótulos ──────── */
 
 @media screen and (max-width: 767px) {
   .wrap {
@@ -243,28 +284,69 @@ footer a:hover {
     font-size: 1.8rem;
   }
 
-  .head {
+  .board,
+  .board tbody,
+  .board tr,
+  .board th,
+  .board td {
+    display: block;
+    width: auto;
+  }
+
+  .board thead {
     display: none;
   }
 
-  .row {
-    flex-wrap: wrap;
-    gap: 4px 22px;
+  .board caption.meta {
+    padding-bottom: 16px;
   }
 
-  .cell.name {
-    flex-basis: 100%;
+  .board tr {
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border);
   }
 
-  .cell.uni {
-    flex: 1 1 auto;
-  }
-
-  .cell.sem,
-  .cell.count,
-  .cell.date,
-  .cell.actions {
-    width: auto;
+  .board th,
+  .board td {
+    padding: 3px 0;
+    border: 0;
     text-align: left;
+    white-space: normal;
+    overflow: visible;
+  }
+
+  .board .sem,
+  .board .count,
+  .board .date,
+  .board .actions {
+    text-align: left;
+  }
+
+  .board td[data-label]::before {
+    content: attr(data-label) ": ";
+    color: var(--muted);
+  }
+
+  .board th.name {
+    margin-bottom: 6px;
+  }
+
+  .board th.name a {
+    display: inline-block;
+    padding: 6px 0;
+    font-size: 1.5rem;
+  }
+
+  .board .actions {
+    margin-top: 6px;
+  }
+
+  .board .actions a {
+    min-height: 44px;
+    padding: 0 16px;
+  }
+
+  .board .actions a:first-child {
+    padding-left: 0;
   }
 }

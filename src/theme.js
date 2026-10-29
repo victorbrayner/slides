@@ -1,25 +1,27 @@
 (function () {
   var root = document.documentElement;
-  var stored = null;
-  try {
-    stored = localStorage.getItem("theme");
-  } catch (e) {}
 
-  function apply(theme) {
-    root.setAttribute("data-theme", theme);
-    var btn = document.getElementById("theme-toggle");
-    if (btn) btn.textContent = theme === "dark" ? "◐ claro" : "◑ escuro";
+  function currentTheme() {
+    return root.getAttribute("data-theme") === "light" ? "light" : "dark";
   }
 
-  apply(stored === "light" ? "light" : "dark");
+  function label(theme) {
+    return theme === "dark" ? "◐ claro" : "◑ escuro";
+  }
+
+  // sincroniza o rótulo com o tema aplicado no <head> (sem gravar nada)
+  var btn = document.getElementById("theme-toggle");
+  if (btn) btn.textContent = label(currentTheme());
 
   document.addEventListener("click", function (e) {
-    if (e.target && e.target.id === "theme-toggle") {
-      var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
-      apply(next);
-      try {
-        localStorage.setItem("theme", next);
-      } catch (err) {}
-    }
+    var target = e.target && e.target.closest ? e.target.closest("#theme-toggle") : null;
+    if (!target) return;
+
+    var next = currentTheme() === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    target.textContent = label(next);
+    try {
+      localStorage.setItem("theme", next);
+    } catch (err) {}
   });
 })();

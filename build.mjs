@@ -160,20 +160,20 @@ export async function build({
   // página inicial — painel de disciplinas
   const rows = allDisciplines
     .map(
-      ({ uni, disc }) => `      <li class="row">
-        <a class="cell board-link" href="/${disc.path}/" aria-label="Abrir ${esc(disc.name)}">●</a>
-        <span class="cell name">${esc(disc.name)}</span>
-        <span class="cell uni">${esc(uni.name)}</span>
-        <span class="cell sem">${disc.semester}</span>
-        <span class="cell count">${disc.slides.length}</span>
-        <span class="cell date">${formatDate(disc.lastDate)}</span>
-      </li>`
+      ({ uni, disc }) => `        <tr>
+          <th scope="row" class="name"><a href="/${disc.path}/" title="${esc(disc.name)}">${esc(disc.name)}</a></th>
+          <td class="uni" data-label="Universidade">${esc(uni.name)}</td>
+          <td class="sem" data-label="Semestre">${disc.semester}</td>
+          <td class="count" data-label="Slides">${disc.slides.length}</td>
+          <td class="date" data-label="Último"><time datetime="${disc.lastDate}">${formatDate(disc.lastDate)}</time></td>
+        </tr>`
     )
     .join("\n");
 
   const indexHtml = await render(join(resolvedSrcDir, "index.template.html"), {
     TITLE: "Materiais de Aula — Prof. Victor Brayner",
-    ROWS: rows || '      <p class="comment">// nenhum slide publicado ainda</p>',
+    ROWS: rows,
+    EMPTY: rows ? "" : '    <p class="comment">// nenhum slide publicado ainda</p>',
     META: `// ${allDisciplines.length} disciplinas · ${totalSlides} slides`,
     ROOT: "",
   });
@@ -186,14 +186,14 @@ export async function build({
 
     const slideRows = disc.slides
       .map(
-        (slide) => `      <li class="row">
-        <span class="cell date">${formatDate(slide.date)}</span>
-        <span class="cell name">${esc(slide.title)}</span>
-        <span class="cell actions">
-          <a href="/${slide.href}" target="_blank" rel="noopener">ver</a>
-          <a href="/${slide.href}" download>baixar</a>
-        </span>
-      </li>`
+        (slide) => `        <tr>
+          <td class="date" data-label="Data"><time datetime="${slide.date}">${formatDate(slide.date)}</time></td>
+          <th scope="row" class="name"><a href="/${slide.href}" target="_blank" rel="noopener" title="${esc(slide.title)}">${esc(slide.title)}</a></th>
+          <td class="actions">
+            <a class="view" href="/${slide.href}" target="_blank" rel="noopener">ver</a>
+            <a class="download" href="/${slide.href}" download>baixar</a>
+          </td>
+        </tr>`
       )
       .join("\n");
 
