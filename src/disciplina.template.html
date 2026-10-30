@@ -4,6 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{{TITLE}}</title>
+  <meta name="description" content="{{DESC}}" />
+  <link rel="canonical" href="{{URL}}" />
+  <meta property="og:title" content="{{TITLE}}" />
+  <meta property="og:description" content="{{DESC}}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{{URL}}" />
+  <link rel="icon" href="{{ROOT}}assets/favicon.svg" type="image/svg+xml" />
   <script>
     // aplica o tema salvo antes do primeiro paint (evita flash de tema errado)
     (function () {
@@ -22,6 +29,7 @@
   <script src="{{ROOT}}theme.js" defer></script>
 </head>
 <body>
+  <a class="skip" href="#conteudo">pular para o conteúdo</a>
   <div class="wrap">
     <header>
       <div>
@@ -32,19 +40,21 @@
       <button id="theme-toggle" type="button" aria-label="Alternar tema claro e escuro">◐ claro</button>
     </header>
 
-    <table class="board board-slides">
-      <caption class="meta">{{META}}</caption>
-      <thead>
-        <tr>
-          <th scope="col" class="date">Data</th>
-          <th scope="col" class="name">Título</th>
-          <th scope="col" class="actions">Ações</th>
-        </tr>
-      </thead>
-      <tbody>
+    <main id="conteudo">
+      <table class="board board-slides">
+        <caption class="meta">{{META}}</caption>
+        <thead>
+          <tr>
+            <th scope="col" class="date">Data</th>
+            <th scope="col" class="name">Título</th>
+            <th scope="col" class="actions">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
 {{ROWS}}
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </main>
 
     <footer>
       <span>prof. victor brayner · 2026</span>

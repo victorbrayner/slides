@@ -8,6 +8,8 @@ const SRC_DIR = join(ROOT, "src");
 const ASSETS_DIR = join(ROOT, "assets");
 const DIST_DIR = join(ROOT, "dist");
 
+const SITE_URL = "https://slides.brayner.dev";
+
 const FILENAME_RE = /^(\d{4}-\d{2}-\d{2})--(.+)\.pdf$/;
 
 export function slugify(text) {
@@ -43,6 +45,14 @@ export function esc(text) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+// codifica cada segmento do caminho para uso em href (espaços, aspas, acentos…)
+export function encodePath(path) {
+  return path
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
 }
 
 async function render(templatePath, vars) {
@@ -103,7 +113,8 @@ export async function scan({ slidesDir } = {}) {
         });
       }
 
-      slides.sort((a, b) => b.date.localeCompare(a.date));
+      // ordem determinística: data decrescente, desempate pelo nome do arquivo
+      slides.sort((a, b) => b.date.localeCompare(a.date) || a.file.localeCompare(b.file));
       if (slides.length === 0) continue;
 
       disciplines.push({
@@ -141,19 +152,22 @@ export async function build({
 
   const universities = await scan({ slidesDir: resolvedSlidesDir });
 
-  // assets estáticos
+  // assets estáticos (fonte, favicon, etc.) + arquivos fixos
   await mkdir(join(resolvedDistDir, "assets"), { recursive: true });
-  await copyFile(
-    join(resolvedAssetsDir, "DepartureMono-Regular.woff2"),
-    join(resolvedDistDir, "assets", "DepartureMono-Regular.woff2")
-  );
+  for (const asset of await readdir(resolvedAssetsDir)) {
+    await copyFile(join(resolvedAssetsDir, asset), join(resolvedDistDir, "assets", asset));
+  }
   await copyFile(join(resolvedSrcDir, "style.css"), join(resolvedDistDir, "style.css"));
   await copyFile(join(resolvedSrcDir, "theme.js"), join(resolvedDistDir, "theme.js"));
+  await copyFile(join(resolvedSrcDir, "404.html"), join(resolvedDistDir, "404.html"));
 
   const allDisciplines = universities.flatMap((uni) =>
     uni.disciplines.map((disc) => ({ uni, disc }))
   );
-  allDisciplines.sort((a, b) => b.disc.lastDate.localeCompare(a.disc.lastDate));
+  allDisciplines.sort(
+    (a, b) =>
+      b.disc.lastDate.localeCompare(a.disc.lastDate) || a.disc.name.localeCompare(b.disc.name)
+  );
 
   const totalSlides = allDisciplines.reduce((n, { disc }) => n + disc.slides.length, 0);
 
@@ -161,7 +175,7 @@ export async function build({
   const rows = allDisciplines
     .map(
       ({ uni, disc }) => `        <tr>
-          <th scope="row" class="name"><a href="/${disc.path}/" title="${esc(disc.name)}">${esc(disc.name)}</a></th>
+          <th scope="row" class="name"><a href="${encodePath(disc.path)}/" title="${esc(disc.name)}">${esc(disc.name)}</a></th>
           <td class="uni" data-label="Universidade">${esc(uni.name)}</td>
           <td class="sem" data-label="Semestre">${disc.semester}</td>
           <td class="count" data-label="Slides">${disc.slides.length}</td>
@@ -172,6 +186,8 @@ export async function build({
 
   const indexHtml = await render(join(resolvedSrcDir, "index.template.html"), {
     TITLE: "Materiais de Aula — Prof. Victor Brayner",
+    DESC: "Slides e materiais de aula do Prof. Victor Brayner — disciplinas, aulas e downloads em PDF.",
+    URL: `${SITE_URL}/`,
     ROWS: rows,
     EMPTY: rows ? "" : '    <p class="comment">// nenhum slide publicado ainda</p>',
     META: `// ${allDisciplines.length} disciplinas · ${totalSlides} slides`,
@@ -188,22 +204,24 @@ export async function build({
       .map(
         (slide) => `        <tr>
           <td class="date" data-label="Data"><time datetime="${slide.date}">${formatDate(slide.date)}</time></td>
-          <th scope="row" class="name"><a href="/${slide.href}" target="_blank" rel="noopener" title="${esc(slide.title)}">${esc(slide.title)}</a></th>
+          <th scope="row" class="name"><a href="./${encodePath(slide.file)}" target="_blank" rel="noopener" title="${esc(slide.title)}">${esc(slide.title)}</a></th>
           <td class="actions">
-            <a class="view" href="/${slide.href}" target="_blank" rel="noopener">ver</a>
-            <a class="download" href="/${slide.href}" download>baixar</a>
+            <a class="view" href="./${encodePath(slide.file)}" target="_blank" rel="noopener">ver</a>
+            <a class="download" href="./${encodePath(slide.file)}" download>baixar</a>
           </td>
         </tr>`
       )
       .join("\n");
 
     const html = await render(join(resolvedSrcDir, "disciplina.template.html"), {
-      TITLE: `${disc.name} — ${uni.name}`,
+      TITLE: esc(`${disc.name} — ${uni.name}`),
+      DESC: esc(`Slides de ${disc.name} (${uni.name}) — materiais de aula em PDF para download.`),
+      URL: `${SITE_URL}/${disc.path}/`,
       DISCIPLINA: esc(disc.name),
       UNIVERSIDADE: esc(uni.name),
       ROWS: slideRows,
       META: `// ${disc.slides.length} slides · ${disc.semester}`,
-      ROOT: "/",
+      ROOT: "../../",
     });
     await writeFile(join(outDir, "index.html"), html);
 
@@ -215,6 +233,29 @@ export async function build({
       );
     }
   }
+
+  // robots.txt e sitemap.xml
+  await writeFile(
+    join(resolvedDistDir, "robots.txt"),
+    `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitemap.xml\n`
+  );
+
+  const sitemapEntries = [
+    { loc: `${SITE_URL}/`, lastmod: allDisciplines[0]?.disc.lastDate },
+    ...allDisciplines.map(({ disc }) => ({
+      loc: `${SITE_URL}/${disc.path}/`,
+      lastmod: disc.lastDate,
+    })),
+  ];
+  await writeFile(
+    join(resolvedDistDir, "sitemap.xml"),
+    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapEntries
+      .map(
+        ({ loc, lastmod }) =>
+          `  <url>\n    <loc>${loc}</loc>${lastmod ? `\n    <lastmod>${lastmod}</lastmod>` : ""}\n  </url>`
+      )
+      .join("\n")}\n</urlset>\n`
+  );
 
   if (!silent) {
     console.log(
