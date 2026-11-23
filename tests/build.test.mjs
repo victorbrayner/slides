@@ -148,6 +148,10 @@ describe("build", () => {
       join(srcDir, "disciplina.template.html"),
       "<!DOCTYPE html><html><title>{{TITLE}}</title><h1>{{DISCIPLINA}}</h1><h2>{{UNIVERSIDADE}}</h2>{{ROWS}}<p>{{META}}</p></html>"
     );
+    await writeFile(
+      join(srcDir, "universidade.template.html"),
+      "<!DOCTYPE html><html><title>{{TITLE}}</title><h1>{{UNIVERSIDADE}}</h1>{{ROWS}}<p>{{META}}</p></html>"
+    );
     await writeFile(join(srcDir, "style.css"), "body{}");
     await writeFile(join(srcDir, "theme.js"), "console.log('theme');");
     await writeFile(join(srcDir, "404.html"), "<!DOCTYPE html><html><title>404</title></html>");
@@ -232,5 +236,44 @@ describe("build", () => {
 
     assert.equal(allDisciplines[0].disc.name, "Álgebra");
     assert.equal(allDisciplines[1].disc.name, "Cálculo I");
+  });
+
+  it("gera página por universidade e linka a universidade na home", async () => {
+    const slidesDir = join(base, "slides");
+    await mkdir(join(slidesDir, "UFERSA", "Cálculo I"), { recursive: true });
+    await mkdir(join(slidesDir, "UFERSA", "Redes"), { recursive: true });
+    await mkdir(join(slidesDir, "UFRN", "Álgebra"), { recursive: true });
+
+    await writeFile(
+      join(slidesDir, "UFERSA", "Cálculo I", "2026-03-01--aula-01.pdf"),
+      "%PDF-1.4"
+    );
+    await writeFile(
+      join(slidesDir, "UFERSA", "Redes", "2026-04-01--aula-01.pdf"),
+      "%PDF-1.4"
+    );
+    await writeFile(
+      join(slidesDir, "UFRN", "Álgebra", "2026-05-01--aula-01.pdf"),
+      "%PDF-1.4"
+    );
+
+    await build({
+      slidesDir,
+      srcDir,
+      assetsDir,
+      distDir,
+      silent: true,
+    });
+
+    // a página da universidade lista apenas as disciplinas daquela faculdade
+    const uniHtml = await readFile(join(distDir, "ufersa", "index.html"), "utf8");
+    assert.ok(uniHtml.includes("Cálculo I"));
+    assert.ok(uniHtml.includes("Redes"));
+    assert.ok(!uniHtml.includes("Álgebra"));
+
+    // a home linka a universidade para a sua página
+    const indexHtml = await readFile(join(distDir, "index.html"), "utf8");
+    assert.ok(indexHtml.includes('href="ufersa/"'));
+    assert.ok(indexHtml.includes('href="ufrn/"'));
   });
 });

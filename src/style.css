@@ -199,6 +199,11 @@ h1 {
 .board-index .count { width: 11%; }
 .board-index .date { width: 15%; }
 
+.board-uni .name { width: 58%; }
+.board-uni .sem { width: 12%; }
+.board-uni .count { width: 12%; }
+.board-uni .date { width: 18%; }
+
 .board-slides .date { width: 15%; }
 .board-slides .name { width: 65%; }
 .board-slides .actions { width: 20%; }
@@ -222,12 +227,24 @@ h1 {
   inset: 0;
 }
 
+/* link da universidade na home: alvo próprio acima do link esticado da linha */
+.board td.uni a {
+  position: relative;
+  z-index: 1;
+  color: var(--muted);
+  text-decoration: none;
+}
+
 @media (hover: hover) {
   .board tbody tr:hover {
     background-color: var(--row-hover);
   }
 
   .board tbody tr:hover th.name a {
+    color: var(--accent);
+  }
+
+  .board td.uni a:hover {
     color: var(--accent);
   }
 }

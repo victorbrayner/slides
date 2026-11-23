@@ -92,11 +92,55 @@ describe("front-end (templates reais)", () => {
     assert.ok(html.includes('href="./2026-03-15--aula-01.pdf"'));
     assert.ok(html.includes('href="../../style.css"'));
     assert.ok(html.includes('href="../../assets/favicon.svg"'));
-    assert.ok(html.includes('<a class="back" href="../../">'));
+    // volta para a página da universidade, não direto para a home
+    assert.ok(html.includes('<a class="back" href="../">'));
     // ações
     assert.ok(html.includes('target="_blank" rel="noopener">ver</a>'));
     assert.ok(html.includes(" download>baixar</a>"));
     assert.ok(!html.includes('href="/'));
+  });
+
+  it("gera página de universidade com as disciplinas daquela faculdade", async () => {
+    ({ base, distDir } = await buildFixture({
+      "UNIT/Redes de Computadores/2026-03-15--aula-01.pdf": "%PDF-1.4",
+      "UNIT/Sistemas Operacionais/2026-04-01--aula-01.pdf": "%PDF-1.4",
+      "UFERSA/Cálculo I/2026-05-01--aula-01.pdf": "%PDF-1.4",
+    }));
+
+    const html = await readFile(join(distDir, "unit", "index.html"), "utf8");
+
+    // tabela própria, sem coluna de universidade (constante na página)
+    assert.ok(html.includes('<table class="board board-uni">'));
+    assert.ok(!html.includes('data-label="Universidade"'));
+
+    // apenas disciplinas da UNIT, linkando para as páginas de disciplina
+    assert.ok(html.includes('href="./redes-de-computadores/"'));
+    assert.ok(html.includes('href="./sistemas-operacionais/"'));
+    assert.ok(!html.includes("Cálculo I"));
+
+    // ordenadas pela data do slide mais recente
+    assert.ok(html.indexOf("Sistemas Operacionais") < html.indexOf("Redes de Computadores"));
+
+    // navegação e assets relativos
+    assert.ok(html.includes('<a class="back" href="../">'));
+    assert.ok(html.includes('href="../style.css"'));
+    assert.ok(html.includes('href="../assets/favicon.svg"'));
+    assert.ok(!html.includes('href="/'));
+  });
+
+  it("transforma a universidade da home em link para a página da faculdade", async () => {
+    ({ base, distDir } = await buildFixture({
+      "UNIT/Redes de Computadores/2026-03-15--aula-01.pdf": "%PDF-1.4",
+    }));
+
+    const html = await readFile(join(distDir, "index.html"), "utf8");
+    assert.ok(
+      html.includes('<td class="uni" data-label="Universidade"><a href="unit/" title="UNIT">UNIT</a></td>')
+    );
+
+    // sitemap inclui a página da universidade
+    const sitemap = await readFile(join(distDir, "sitemap.xml"), "utf8");
+    assert.ok(sitemap.includes("<loc>https://slides.brayner.dev/unit/</loc>"));
   });
 
   it("codifica hrefs com espaços e escapa títulos especiais", async () => {

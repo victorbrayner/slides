@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{TITLE}}</title>
+  <meta name="description" content="{{DESC}}" />
+  <link rel="canonical" href="{{URL}}" />
+  <meta property="og:title" content="{{TITLE}}" />
+  <meta property="og:description" content="{{DESC}}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{{URL}}" />
+  <link rel="icon" href="{{ROOT}}assets/favicon.svg" type="image/svg+xml" />
+  <script>
+    // aplica o tema salvo antes do primeiro paint (evita flash de tema errado)
+    (function () {
+      try {
+        var theme = localStorage.getItem("theme");
+        if (theme !== "light" && theme !== "dark") {
+          theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark";
+        }
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="{{ROOT}}style.css" />
+  <script src="{{ROOT}}theme.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#conteudo">pular para o conteúdo</a>
+  <div class="wrap">
+    <header>
+      <div>
+        <a class="back" href="{{ROOT}}">← disciplinas</a>
+        <h1>{{UNIVERSIDADE}}</h1>
+        <p class="subtitle">Prof. Victor Brayner</p>
+      </div>
+      <button id="theme-toggle" type="button" aria-label="Alternar tema claro e escuro">◐ claro</button>
+    </header>
+
+    <main id="conteudo">
+      <table class="board board-uni">
+        <caption class="meta">{{META}}</caption>
+        <thead>
+          <tr>
+            <th scope="col" class="name">Disciplina</th>
+            <th scope="col" class="sem">Sem.</th>
+            <th scope="col" class="count">Slides</th>
+            <th scope="col" class="date">Último</th>
+          </tr>
+        </thead>
+        <tbody>
+{{ROWS}}
+        </tbody>
+      </table>
+{{EMPTY}}
+    </main>
+
+    <footer>
+      <span>prof. victor brayner · 2026</span>
+      <a href="https://brayner.dev">brayner.dev</a>
+    </footer>
+  </div>
+</body>
+</html>

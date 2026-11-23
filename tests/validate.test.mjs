@@ -40,6 +40,7 @@ after(async () => {
 
 const pages = [
   ["index.html", () => join(distDir, "index.html")],
+  ["universidade", () => join(distDir, "ufersa", "index.html")],
   ["disciplina", () => join(distDir, "ufersa", "calculo-i", "index.html")],
   ["404.html", () => join(distDir, "404.html")],
 ];

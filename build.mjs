@@ -152,6 +152,14 @@ export async function build({
 
   const universities = await scan({ slidesDir: resolvedSlidesDir });
 
+  // ordem determinística das disciplinas dentro de cada universidade
+  // (usada nas páginas de universidade: data decrescente, desempate pelo nome)
+  for (const uni of universities) {
+    uni.disciplines.sort(
+      (a, b) => b.lastDate.localeCompare(a.lastDate) || a.name.localeCompare(b.name)
+    );
+  }
+
   // assets estáticos (fonte, favicon, etc.) + arquivos fixos
   await mkdir(join(resolvedDistDir, "assets"), { recursive: true });
   for (const asset of await readdir(resolvedAssetsDir)) {
@@ -176,7 +184,7 @@ export async function build({
     .map(
       ({ uni, disc }) => `        <tr>
           <th scope="row" class="name"><a href="${encodePath(disc.path)}/" title="${esc(disc.name)}">${esc(disc.name)}</a></th>
-          <td class="uni" data-label="Universidade">${esc(uni.name)}</td>
+          <td class="uni" data-label="Universidade"><a href="${encodePath(uni.slug)}/" title="${esc(uni.name)}">${esc(uni.name)}</a></td>
           <td class="sem" data-label="Semestre">${disc.semester}</td>
           <td class="count" data-label="Slides">${disc.slides.length}</td>
           <td class="date" data-label="Último"><time datetime="${disc.lastDate}">${formatDate(disc.lastDate)}</time></td>
@@ -194,6 +202,37 @@ export async function build({
     ROOT: "",
   });
   await writeFile(join(resolvedDistDir, "index.html"), indexHtml);
+
+  // páginas de universidade — todas as disciplinas de uma faculdade
+  for (const uni of universities) {
+    const outDir = join(resolvedDistDir, uni.slug);
+    await mkdir(outDir, { recursive: true });
+
+    const uniRows = uni.disciplines
+      .map(
+        (disc) => `        <tr>
+          <th scope="row" class="name"><a href="./${encodePath(disc.slug)}/" title="${esc(disc.name)}">${esc(disc.name)}</a></th>
+          <td class="sem" data-label="Semestre">${disc.semester}</td>
+          <td class="count" data-label="Slides">${disc.slides.length}</td>
+          <td class="date" data-label="Último"><time datetime="${disc.lastDate}">${formatDate(disc.lastDate)}</time></td>
+        </tr>`
+      )
+      .join("\n");
+
+    const uniSlides = uni.disciplines.reduce((n, disc) => n + disc.slides.length, 0);
+
+    const uniHtml = await render(join(resolvedSrcDir, "universidade.template.html"), {
+      TITLE: esc(`${uni.name} — Materiais de Aula`),
+      DESC: esc(`Disciplinas e slides de aula do Prof. Victor Brayner na ${uni.name} — downloads em PDF.`),
+      URL: `${SITE_URL}/${uni.slug}/`,
+      UNIVERSIDADE: esc(uni.name),
+      ROWS: uniRows,
+      EMPTY: uniRows ? "" : '    <p class="comment">// nenhum slide publicado ainda</p>',
+      META: `// ${uni.disciplines.length} disciplinas · ${uniSlides} slides`,
+      ROOT: "../",
+    });
+    await writeFile(join(outDir, "index.html"), uniHtml);
+  }
 
   // páginas de disciplina
   for (const { uni, disc } of allDisciplines) {
@@ -242,6 +281,10 @@ export async function build({
 
   const sitemapEntries = [
     { loc: `${SITE_URL}/`, lastmod: allDisciplines[0]?.disc.lastDate },
+    ...universities.map((uni) => ({
+      loc: `${SITE_URL}/${uni.slug}/`,
+      lastmod: uni.disciplines[0]?.lastDate,
+    })),
     ...allDisciplines.map(({ disc }) => ({
       loc: `${SITE_URL}/${disc.path}/`,
       lastmod: disc.lastDate,
