@@ -77,8 +77,11 @@ describe("scan", () => {
     assert.equal(disc.name, "Cálculo I");
     assert.equal(disc.slug, "calculo-i");
     assert.equal(disc.slides.length, 2);
-    assert.equal(disc.slides[0].date, "2026-03-22");
-    assert.equal(disc.slides[1].date, "2026-03-15");
+    // aula mais antiga no topo, mais nova no fundo
+    assert.equal(disc.slides[0].date, "2026-03-15");
+    assert.equal(disc.slides[1].date, "2026-03-22");
+    // mas o "último" continua sendo o slide mais recente
+    assert.equal(disc.lastDate, "2026-03-22");
   });
 
   it("ignora PDFs fora do padrão e emite aviso", async () => {

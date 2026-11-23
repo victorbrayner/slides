@@ -172,6 +172,16 @@ describe("front-end (templates reais)", () => {
     assert.ok(html.indexOf("aaa") < html.indexOf("bbb"));
   });
 
+  it("ordena slides da mais antiga para a mais nova", async () => {
+    ({ base, distDir } = await buildFixture({
+      "UFERSA/Cálculo I/2026-03-22--aula-02.pdf": "%PDF-1.4",
+      "UFERSA/Cálculo I/2026-03-15--aula-01.pdf": "%PDF-1.4",
+    }));
+
+    const html = await readFile(join(distDir, "ufersa", "calculo-i", "index.html"), "utf8");
+    assert.ok(html.indexOf("2026-03-15") < html.indexOf("2026-03-22"));
+  });
+
   it("usa o nome do arquivo quando _titulos.json é inválido", async () => {
     ({ base, distDir } = await buildFixture({
       "UFERSA/Cálculo I/2026-03-10--introducao.pdf": "%PDF-1.4",

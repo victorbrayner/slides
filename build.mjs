@@ -113,17 +113,21 @@ export async function scan({ slidesDir } = {}) {
         });
       }
 
-      // ordem determinística: data decrescente, desempate pelo nome do arquivo
-      slides.sort((a, b) => b.date.localeCompare(a.date) || a.file.localeCompare(b.file));
+      // ordem determinística: data crescente (aula mais antiga no topo),
+      // desempate pelo nome do arquivo
+      slides.sort((a, b) => a.date.localeCompare(b.date) || a.file.localeCompare(b.file));
       if (slides.length === 0) continue;
+
+      // com a lista em ordem crescente, o último elemento é o mais recente
+      const lastDate = slides[slides.length - 1].date;
 
       disciplines.push({
         name: discName,
         slug: discSlug,
         path: `${uniSlug}/${discSlug}`,
         slides,
-        lastDate: slides[0].date,
-        semester: semesterOf(slides[0].date),
+        lastDate,
+        semester: semesterOf(lastDate),
       });
     }
 
