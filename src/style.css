@@ -297,6 +297,12 @@ footer {
   flex-wrap: wrap;
 }
 
+footer nav.links {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+
 footer a {
   display: inline-flex;
   align-items: center;

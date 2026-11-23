@@ -74,6 +74,11 @@ describe("front-end (templates reais)", () => {
     assert.ok(html.includes('<link rel="icon"'));
     assert.ok(html.includes("https://slides.brayner.dev/"));
 
+    // rodapé: github ao lado do site pessoal
+    assert.ok(html.includes('<nav class="links">'));
+    assert.ok(html.includes('href="https://github.com/victorbrayner/slides"'));
+    assert.ok(html.includes(">github</a>"));
+
     // script anti-FOUC antes do CSS no <head>
     const head = html.slice(0, html.indexOf("</head>"));
     assert.ok(head.indexOf("localStorage.getItem") < head.indexOf('rel="stylesheet"'));
