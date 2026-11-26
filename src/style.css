@@ -306,6 +306,17 @@ h1 {
   background-color: var(--row-hover);
 }
 
+/* feedback ao tocar (dispositivos sem hover) */
+.board tbody tr:active {
+  background-color: var(--row-hover);
+}
+
+.board tbody tr:active th.name a,
+.board .actions a:active,
+.board td.uni a:active {
+  color: var(--accent);
+}
+
 /* ── ações ──────────────────────────────────────────────── */
 
 .board .actions {
