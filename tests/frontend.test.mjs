@@ -88,6 +88,7 @@ describe("front-end (templates reais)", () => {
     assert.ok(html.includes('<meta name="twitter:card" content="summary_large_image" />'));
     assert.ok(html.includes('<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />'));
     assert.ok(html.includes('<meta name="theme-color" content="#222222" />'));
+    assert.ok(html.includes(`victor brayner · ${new Date().getFullYear()}`));
 
     // rodapé: github ao lado do site pessoal
     assert.ok(html.includes('<nav class="links" aria-label="Links externos">'));
@@ -259,6 +260,10 @@ describe("front-end (templates reais)", () => {
     assert.ok(sitemap.includes("<lastmod>2026-03-15</lastmod>"));
 
     await access(join(distDir, "404.html"));
+    const html404 = await readFile(join(distDir, "404.html"), "utf8");
+    const year = new Date().getFullYear();
+    assert.ok(html404.includes(`victor brayner · ${year}`));
+    assert.ok(!html404.includes("{{"));
     await access(join(distDir, "assets", "favicon.svg"));
     await access(join(distDir, "assets", "DepartureMono-Regular.woff2"));
     await access(join(distDir, "assets", "og.png"));

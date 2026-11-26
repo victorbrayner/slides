@@ -9,6 +9,7 @@ const ASSETS_DIR = join(ROOT, "assets");
 const DIST_DIR = join(ROOT, "dist");
 
 const SITE_URL = "https://slides.brayner.dev";
+const YEAR = new Date().getFullYear();
 
 const FILENAME_RE = /^(\d{4}-\d{2}-\d{2})--(.+)\.pdf$/;
 
@@ -171,7 +172,10 @@ export async function build({
   }
   await copyFile(join(resolvedSrcDir, "style.css"), join(resolvedDistDir, "style.css"));
   await copyFile(join(resolvedSrcDir, "theme.js"), join(resolvedDistDir, "theme.js"));
-  await copyFile(join(resolvedSrcDir, "404.html"), join(resolvedDistDir, "404.html"));
+  await writeFile(
+    join(resolvedDistDir, "404.html"),
+    await render(join(resolvedSrcDir, "404.html"), { YEAR })
+  );
 
   const allDisciplines = universities.flatMap((uni) =>
     uni.disciplines.map((disc) => ({ uni, disc }))
@@ -205,6 +209,7 @@ export async function build({
     EMPTY: rows ? "" : '    <p class="comment">// nenhum slide publicado ainda</p>',
     META: `// ${allDisciplines.length} disciplinas · ${totalSlides} slides`,
     ROOT: "",
+    YEAR,
   });
   await writeFile(join(resolvedDistDir, "index.html"), indexHtml);
 
@@ -236,6 +241,7 @@ export async function build({
       EMPTY: uniRows ? "" : '    <p class="comment">// nenhum slide publicado ainda</p>',
       META: `// ${uni.disciplines.length} disciplinas · ${uniSlides} slides`,
       ROOT: "../",
+      YEAR,
     });
     await writeFile(join(outDir, "index.html"), uniHtml);
   }
@@ -268,6 +274,7 @@ export async function build({
       ROWS: slideRows,
       META: `// ${disc.slides.length} slides · ${disc.semester}`,
       ROOT: "../../",
+      YEAR,
     });
     await writeFile(join(outDir, "index.html"), html);
 
