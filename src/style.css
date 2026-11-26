@@ -509,3 +509,70 @@ footer a:hover {
     transition: none !important;
   }
 }
+
+/* ── impressão ──────────────────────────────────────────── */
+
+@media print {
+  :root,
+  :root[data-theme="dark"],
+  :root[data-theme="light"] {
+    --fg: #111111;
+    --bg: #ffffff;
+    --muted: #444444;
+    --border: #cccccc;
+    --accent: #7a4300;
+    --row-hover: transparent;
+  }
+
+  body {
+    background: #ffffff;
+  }
+
+  .wrap {
+    max-width: none;
+    padding: 0;
+  }
+
+  .skip,
+  #theme-toggle,
+  .filtro,
+  .crumbs,
+  footer nav.links {
+    display: none;
+  }
+
+  header {
+    margin-bottom: 22px;
+  }
+
+  .board th,
+  .board td {
+    padding: 6px 12px 6px 0;
+  }
+
+  .board tbody tr {
+    break-inside: avoid;
+  }
+
+  /* "ver" e "baixar" não fazem sentido no papel */
+  .board .actions {
+    display: none;
+  }
+
+  /* títulos completos, sem clamp */
+  .board th.name a,
+  .board td.name a {
+    -webkit-line-clamp: unset;
+    display: inline;
+    overflow: visible;
+  }
+
+  a {
+    color: var(--fg);
+    text-decoration: none;
+  }
+
+  @page {
+    margin: 1.5cm;
+  }
+}

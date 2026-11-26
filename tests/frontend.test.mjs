@@ -286,5 +286,6 @@ describe("front-end (templates reais)", () => {
     const css = await readFile(join(distDir, "style.css"), "utf8");
     assert.ok(css.includes('url("assets/DepartureMono-Regular.woff2")'));
     assert.ok(!css.includes('url("/assets'));
+    assert.ok(css.includes("@media print"));
   });
 });
