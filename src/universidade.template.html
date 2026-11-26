@@ -37,6 +37,7 @@
   <link rel="preload" href="{{ROOT}}assets/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="{{ROOT}}style.css" />
   <script src="{{ROOT}}theme.js" defer></script>
+  <script src="{{ROOT}}filter.js" defer></script>
 </head>
 <body>
   <a class="skip" href="#conteudo">pular para o conteúdo</a>
@@ -55,6 +56,10 @@
     </header>
 
     <main id="conteudo">
+      <div class="filtro" hidden>
+        <label for="filtro">filtrar</label>
+        <input id="filtro" type="search" autocomplete="off" placeholder="digite para filtrar…" />
+      </div>
       <table class="board board-uni">
         <caption class="meta">{{META}}</caption>
         <thead>
@@ -70,6 +75,7 @@
         </tbody>
       </table>
 {{EMPTY}}
+      <p class="comment" id="filtro-status" role="status" hidden></p>
     </main>
 
     <footer>

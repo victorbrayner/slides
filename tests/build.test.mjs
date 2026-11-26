@@ -157,6 +157,7 @@ describe("build", () => {
     );
     await writeFile(join(srcDir, "style.css"), "body{}");
     await writeFile(join(srcDir, "theme.js"), "console.log('theme');");
+    await writeFile(join(srcDir, "filter.js"), "console.log('filter');");
     await writeFile(join(srcDir, "404.html"), "<!DOCTYPE html><html><title>404</title></html>");
     await writeFile(join(assetsDir, "DepartureMono-Regular.woff2"), "woff2");
   });

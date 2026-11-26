@@ -67,6 +67,13 @@ describe("front-end (templates reais)", () => {
     assert.ok(html.includes('<a class="skip" href="#conteudo">'));
     assert.ok(html.includes('<main id="conteudo">'));
 
+    // filtro progressivo: oculto sem JS e revelado por filter.js
+    assert.ok(html.includes('<div class="filtro" hidden>'));
+    assert.ok(html.includes('<label for="filtro">filtrar</label>'));
+    assert.ok(html.includes('<input id="filtro" type="search"'));
+    assert.ok(html.includes('<script src="filter.js" defer></script>'));
+    assert.ok(html.includes('id="filtro-status" role="status"'));
+
     // SEO/social
     assert.ok(html.includes('<meta name="description"'));
     assert.ok(html.includes('<link rel="canonical"'));
@@ -273,6 +280,7 @@ describe("front-end (templates reais)", () => {
     await access(join(distDir, "assets", "DepartureMono-Regular.woff2"));
     await access(join(distDir, "assets", "og.png"));
     await access(join(distDir, "assets", "apple-touch-icon.png"));
+    await access(join(distDir, "filter.js"));
 
     // fonte referenciada de forma relativa no CSS
     const css = await readFile(join(distDir, "style.css"), "utf8");

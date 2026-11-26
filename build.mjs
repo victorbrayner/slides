@@ -172,6 +172,7 @@ export async function build({
   }
   await copyFile(join(resolvedSrcDir, "style.css"), join(resolvedDistDir, "style.css"));
   await copyFile(join(resolvedSrcDir, "theme.js"), join(resolvedDistDir, "theme.js"));
+  await copyFile(join(resolvedSrcDir, "filter.js"), join(resolvedDistDir, "filter.js"));
   await writeFile(
     join(resolvedDistDir, "404.html"),
     await render(join(resolvedSrcDir, "404.html"), { YEAR })

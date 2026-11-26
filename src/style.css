@@ -59,6 +59,10 @@ body {
   background-color: var(--fg);
 }
 
+[hidden] {
+  display: none !important;
+}
+
 a:focus-visible,
 button:focus-visible {
   outline: 2px solid var(--accent);
@@ -177,6 +181,46 @@ h1 {
 
 .comment {
   color: var(--muted);
+}
+
+/* ── filtro ─────────────────────────────────────────────── */
+
+.filtro {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 11px;
+}
+
+.filtro label {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.filtro input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 14px;
+  font-family: inherit;
+  font-size: 1.4rem;
+  color: var(--fg);
+  background: transparent;
+  border: 1px solid var(--border);
+}
+
+.filtro input::placeholder {
+  color: var(--muted);
+}
+
+.filtro input:hover {
+  border-color: var(--accent);
+}
+
+.filtro input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-color: var(--accent);
 }
 
 /* ── tabela ─────────────────────────────────────────────── */
