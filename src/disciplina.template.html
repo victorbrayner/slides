@@ -33,9 +33,13 @@
   <div class="wrap">
     <header>
       <div>
-        <a class="back" href="../">← disciplinas</a>
+        <nav class="crumbs" aria-label="Trilha de navegação">
+          <ol>
+            <li><a href="{{ROOT}}">← início</a></li>
+            <li><a href="../">{{UNIVERSIDADE}}</a></li>
+          </ol>
+        </nav>
         <h1>{{DISCIPLINA}}</h1>
-        <p class="subtitle">{{UNIVERSIDADE}}</p>
       </div>
       <button id="theme-toggle" type="button" aria-label="Alternar tema claro e escuro">◐ claro</button>
     </header>
@@ -58,7 +62,7 @@
 
     <footer>
       <span>victor brayner · 2026</span>
-      <nav class="links">
+      <nav class="links" aria-label="Links externos">
         <a href="https://github.com/victorbrayner/slides">github</a>
         <a href="https://brayner.dev">brayner.dev</a>
       </nav>

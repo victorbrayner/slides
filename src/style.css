@@ -116,6 +116,43 @@ h1 {
   color: var(--accent);
 }
 
+/* ── trilha de navegação ────────────────────────────────── */
+
+.crumbs {
+  margin-bottom: 6px;
+  color: var(--muted);
+}
+
+.crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  list-style: none;
+}
+
+.crumbs li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.crumbs li + li::before {
+  content: "›";
+}
+
+.crumbs a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.crumbs a:hover {
+  color: var(--accent);
+}
+
 .subtitle {
   color: var(--muted);
   margin-top: 6px;

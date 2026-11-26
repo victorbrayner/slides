@@ -75,7 +75,7 @@ describe("front-end (templates reais)", () => {
     assert.ok(html.includes("https://slides.brayner.dev/"));
 
     // rodapé: github ao lado do site pessoal
-    assert.ok(html.includes('<nav class="links">'));
+    assert.ok(html.includes('<nav class="links" aria-label="Links externos">'));
     assert.ok(html.includes('href="https://github.com/victorbrayner/slides"'));
     assert.ok(html.includes(">github</a>"));
 
@@ -97,8 +97,11 @@ describe("front-end (templates reais)", () => {
     assert.ok(html.includes('href="./2026-03-15--aula-01.pdf"'));
     assert.ok(html.includes('href="../../style.css"'));
     assert.ok(html.includes('href="../../assets/favicon.svg"'));
-    // volta para a página da universidade, não direto para a home
-    assert.ok(html.includes('<a class="back" href="../">'));
+    // trilha de navegação: início → home; universidade → página da universidade
+    assert.ok(html.includes('<nav class="crumbs" aria-label="Trilha de navegação">'));
+    assert.ok(html.includes('<a href="../../">← início</a>'));
+    assert.ok(html.includes('<a href="../">UFERSA</a>'));
+    assert.ok(!html.includes("← disciplinas"));
     // ações
     assert.ok(html.includes('target="_blank" rel="noopener">ver</a>'));
     assert.ok(html.includes(" download>baixar</a>"));
@@ -127,7 +130,9 @@ describe("front-end (templates reais)", () => {
     assert.ok(html.indexOf("Sistemas Operacionais") < html.indexOf("Redes de Computadores"));
 
     // navegação e assets relativos
-    assert.ok(html.includes('<a class="back" href="../">'));
+    assert.ok(html.includes('<nav class="crumbs" aria-label="Trilha de navegação">'));
+    assert.ok(html.includes('<a href="../">← início</a>'));
+    assert.ok(!html.includes("← disciplinas"));
     assert.ok(html.includes('href="../style.css"'));
     assert.ok(html.includes('href="../assets/favicon.svg"'));
     assert.ok(!html.includes('href="/'));
