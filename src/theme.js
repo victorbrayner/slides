@@ -1,5 +1,8 @@
 (function () {
   var root = document.documentElement;
+  var meta = document.querySelector('meta[name="theme-color"]');
+
+  var COLORS = { dark: "#222222", light: "#eeeeee" };
 
   function currentTheme() {
     return root.getAttribute("data-theme") === "light" ? "light" : "dark";
@@ -15,24 +18,44 @@
     return theme === "dark" ? "Alternar para o tema claro" : "Alternar para o tema escuro";
   }
 
-  function sync(button, theme) {
-    button.textContent = label(theme);
-    button.setAttribute("aria-label", ariaLabel(theme));
+  function apply(theme) {
+    root.setAttribute("data-theme", theme);
+    if (meta) meta.setAttribute("content", COLORS[theme]);
+
+    var btn = document.getElementById("theme-toggle");
+    if (btn) {
+      btn.textContent = label(theme);
+      btn.setAttribute("aria-label", ariaLabel(theme));
+    }
   }
 
-  // sincroniza rótulo e nome acessível com o tema aplicado no <head> (sem gravar nada)
-  var btn = document.getElementById("theme-toggle");
-  if (btn) sync(btn, currentTheme());
+  // sincroniza o documento com o tema aplicado no <head> (sem gravar nada)
+  apply(currentTheme());
 
   document.addEventListener("click", function (e) {
     var target = e.target && e.target.closest ? e.target.closest("#theme-toggle") : null;
     if (!target) return;
 
     var next = currentTheme() === "dark" ? "light" : "dark";
-    root.setAttribute("data-theme", next);
-    sync(target, next);
+    apply(next);
     try {
       localStorage.setItem("theme", next);
     } catch (err) {}
   });
+
+  // sem preferência salva, acompanha mudanças do sistema operacional ao vivo
+  var mq = typeof window !== "undefined" && window.matchMedia
+    ? window.matchMedia("(prefers-color-scheme: light)")
+    : null;
+
+  if (mq && mq.addEventListener) {
+    mq.addEventListener("change", function (event) {
+      var stored = null;
+      try {
+        stored = localStorage.getItem("theme");
+      } catch (err) {}
+      if (stored === "light" || stored === "dark") return;
+      apply(event.matches ? "light" : "dark");
+    });
+  }
 })();

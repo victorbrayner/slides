@@ -87,6 +87,7 @@ describe("front-end (templates reais)", () => {
     );
     assert.ok(html.includes('<meta name="twitter:card" content="summary_large_image" />'));
     assert.ok(html.includes('<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />'));
+    assert.ok(html.includes('<meta name="theme-color" content="#222222" />'));
 
     // rodapé: github ao lado do site pessoal
     assert.ok(html.includes('<nav class="links" aria-label="Links externos">'));

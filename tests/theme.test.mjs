@@ -2,11 +2,18 @@ import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
 
 // harness mínimo de DOM para executar o IIFE do theme.js no Node
-function makeEnv({ storedTheme = null, currentTheme = "dark" } = {}) {
+function makeEnv({ storedTheme = null, currentTheme = "dark", systemLight = false } = {}) {
   const state = { theme: currentTheme, stored: storedTheme };
   const listeners = {};
+  const mediaListeners = [];
 
   const attrs = {};
+  const meta = {
+    content: "",
+    setAttribute(name, value) {
+      if (name === "content") this.content = value;
+    },
+  };
 
   const button = {
     textContent: "",
@@ -21,6 +28,15 @@ function makeEnv({ storedTheme = null, currentTheme = "dark" } = {}) {
     },
   };
 
+  globalThis.window = {
+    matchMedia: (query) => ({
+      matches: systemLight && query.indexOf("light") !== -1,
+      addEventListener: (type, handler) => {
+        if (type === "change") mediaListeners.push(handler);
+      },
+    }),
+  };
+
   globalThis.document = {
     documentElement: {
       getAttribute: (name) => (name === "data-theme" ? state.theme : null),
@@ -29,12 +45,14 @@ function makeEnv({ storedTheme = null, currentTheme = "dark" } = {}) {
       },
     },
     getElementById: (id) => (id === "theme-toggle" ? button : null),
+    querySelector: (selector) =>
+      selector === 'meta[name="theme-color"]' ? meta : null,
     addEventListener: (type, handler) => {
       listeners[type] = handler;
     },
   };
 
-  return { state, listeners, button, attrs };
+  return { state, listeners, mediaListeners, button, attrs, meta };
 }
 
 // cache-buster para reexecutar o IIFE do zero a cada cenário
@@ -50,20 +68,23 @@ describe("theme.js", () => {
   afterEach(() => {
     delete globalThis.document;
     delete globalThis.localStorage;
+    delete globalThis.window;
   });
 
   it("sincroniza o rótulo do botão com o tema escuro", async () => {
-    const { button, attrs } = makeEnv({ currentTheme: "dark" });
+    const { button, attrs, meta } = makeEnv({ currentTheme: "dark" });
     await loadTheme();
     assert.equal(button.textContent, "◐ claro");
     assert.equal(attrs["aria-label"], "Alternar para o tema claro");
+    assert.equal(meta.content, "#222222");
   });
 
   it("sincroniza o rótulo do botão com o tema claro", async () => {
-    const { button, attrs } = makeEnv({ currentTheme: "light" });
+    const { button, attrs, meta } = makeEnv({ currentTheme: "light" });
     await loadTheme();
     assert.equal(button.textContent, "◑ escuro");
     assert.equal(attrs["aria-label"], "Alternar para o tema escuro");
+    assert.equal(meta.content, "#eeeeee");
   });
 
   it("não grava no localStorage apenas ao carregar", async () => {
@@ -73,19 +94,21 @@ describe("theme.js", () => {
   });
 
   it("clique alterna o tema, atualiza o rótulo e persiste", async () => {
-    const { state, listeners, button, attrs } = makeEnv({ currentTheme: "dark" });
+    const { state, listeners, button, attrs, meta } = makeEnv({ currentTheme: "dark" });
     await loadTheme();
 
     listeners.click(clickOn(button));
     assert.equal(state.theme, "light");
     assert.equal(button.textContent, "◑ escuro");
     assert.equal(attrs["aria-label"], "Alternar para o tema escuro");
+    assert.equal(meta.content, "#eeeeee");
     assert.equal(state.stored, "light");
 
     listeners.click(clickOn(button));
     assert.equal(state.theme, "dark");
     assert.equal(button.textContent, "◐ claro");
     assert.equal(attrs["aria-label"], "Alternar para o tema claro");
+    assert.equal(meta.content, "#222222");
     assert.equal(state.stored, "dark");
   });
 
@@ -105,5 +128,27 @@ describe("theme.js", () => {
     listeners.click({ target: { closest: () => null } });
     assert.equal(state.theme, "dark");
     assert.equal(state.stored, null);
+  });
+
+  it("segue o sistema ao vivo quando não há preferência salva", async () => {
+    const { state, mediaListeners, meta } = makeEnv({ currentTheme: "dark" });
+    await loadTheme();
+
+    assert.equal(mediaListeners.length, 1);
+    mediaListeners[0]({ matches: true });
+    assert.equal(state.theme, "light");
+    assert.equal(meta.content, "#eeeeee");
+
+    mediaListeners[0]({ matches: false });
+    assert.equal(state.theme, "dark");
+    assert.equal(meta.content, "#222222");
+  });
+
+  it("não segue o sistema quando há preferência salva", async () => {
+    const { state, mediaListeners } = makeEnv({ storedTheme: "dark", currentTheme: "dark" });
+    await loadTheme();
+
+    mediaListeners[0]({ matches: true });
+    assert.equal(state.theme, "dark");
   });
 });
