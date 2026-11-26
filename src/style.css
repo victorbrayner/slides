@@ -448,6 +448,8 @@ footer a:hover {
   }
 
   .board caption.meta {
+    display: block;
+    width: auto;
     padding-bottom: 16px;
   }
 
@@ -463,6 +465,16 @@ footer a:hover {
     text-align: left;
     white-space: normal;
     overflow: visible;
+  }
+
+  /* as larguras percentuais do desktop não valem no layout de cards */
+  .board .name,
+  .board .uni,
+  .board .sem,
+  .board .count,
+  .board .date,
+  .board .actions {
+    width: auto;
   }
 
   .board .sem,
