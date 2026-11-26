@@ -292,7 +292,11 @@ h1 {
 .board-uni .count { width: 12%; }
 .board-uni .date { width: 18%; }
 
-.board-slides .date { width: 15%; }
+.board-slides .date {
+  width: 15%;
+  /* data é a primeira coluna: alinhada à esquerda, como o título */
+  text-align: left;
+}
 .board-slides .name { width: 65%; }
 .board-slides .actions { width: 20%; }
 
