@@ -74,6 +74,20 @@ describe("front-end (templates reais)", () => {
     assert.ok(html.includes('<link rel="icon"'));
     assert.ok(html.includes("https://slides.brayner.dev/"));
 
+    // compartilhamento social: og:image absoluto para crawlers
+    assert.ok(html.includes('<meta property="og:site_name" content="Materiais de Aula" />'));
+    assert.ok(html.includes('<meta property="og:locale" content="pt_BR" />'));
+    assert.ok(
+      html.includes('<meta property="og:image" content="https://slides.brayner.dev/assets/og.png" />')
+    );
+    assert.ok(html.includes('<meta property="og:image:width" content="1200" />'));
+    assert.ok(html.includes('<meta property="og:image:height" content="630" />'));
+    assert.ok(
+      html.includes('<meta property="og:image:alt" content="Materiais de Aula do Prof. Victor Brayner" />')
+    );
+    assert.ok(html.includes('<meta name="twitter:card" content="summary_large_image" />'));
+    assert.ok(html.includes('<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />'));
+
     // rodapé: github ao lado do site pessoal
     assert.ok(html.includes('<nav class="links" aria-label="Links externos">'));
     assert.ok(html.includes('href="https://github.com/victorbrayner/slides"'));
@@ -97,6 +111,7 @@ describe("front-end (templates reais)", () => {
     assert.ok(html.includes('href="./2026-03-15--aula-01.pdf"'));
     assert.ok(html.includes('href="../../style.css"'));
     assert.ok(html.includes('href="../../assets/favicon.svg"'));
+    assert.ok(html.includes('href="../../assets/apple-touch-icon.png"'));
     // trilha de navegação: início → home; universidade → página da universidade
     assert.ok(html.includes('<nav class="crumbs" aria-label="Trilha de navegação">'));
     assert.ok(html.includes('<a href="../../">← início</a>'));
@@ -245,6 +260,8 @@ describe("front-end (templates reais)", () => {
     await access(join(distDir, "404.html"));
     await access(join(distDir, "assets", "favicon.svg"));
     await access(join(distDir, "assets", "DepartureMono-Regular.woff2"));
+    await access(join(distDir, "assets", "og.png"));
+    await access(join(distDir, "assets", "apple-touch-icon.png"));
 
     // fonte referenciada de forma relativa no CSS
     const css = await readFile(join(distDir, "style.css"), "utf8");
