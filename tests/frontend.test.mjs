@@ -82,7 +82,7 @@ describe("front-end (templates reais)", () => {
     // script anti-FOUC antes do CSS no <head>
     const head = html.slice(0, html.indexOf("</head>"));
     assert.ok(head.indexOf("localStorage.getItem") < head.indexOf('rel="stylesheet"'));
-    assert.ok(html.includes('aria-label="Alternar tema claro e escuro"'));
+    assert.ok(html.includes('aria-label="Alternar para o tema claro"'));
   });
 
   it("gera página de disciplina com links relativos e ações acessíveis", async () => {

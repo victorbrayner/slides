@@ -6,10 +6,12 @@ function makeEnv({ storedTheme = null, currentTheme = "dark" } = {}) {
   const state = { theme: currentTheme, stored: storedTheme };
   const listeners = {};
 
+  const attrs = {};
+
   const button = {
     textContent: "",
-    setAttribute() {},
-    getAttribute() { return null; },
+    setAttribute(name, value) { attrs[name] = value; },
+    getAttribute(name) { return attrs[name] ?? null; },
   };
 
   globalThis.localStorage = {
@@ -32,7 +34,7 @@ function makeEnv({ storedTheme = null, currentTheme = "dark" } = {}) {
     },
   };
 
-  return { state, listeners, button };
+  return { state, listeners, button, attrs };
 }
 
 // cache-buster para reexecutar o IIFE do zero a cada cenário
@@ -51,15 +53,17 @@ describe("theme.js", () => {
   });
 
   it("sincroniza o rótulo do botão com o tema escuro", async () => {
-    const { button } = makeEnv({ currentTheme: "dark" });
+    const { button, attrs } = makeEnv({ currentTheme: "dark" });
     await loadTheme();
     assert.equal(button.textContent, "◐ claro");
+    assert.equal(attrs["aria-label"], "Alternar para o tema claro");
   });
 
   it("sincroniza o rótulo do botão com o tema claro", async () => {
-    const { button } = makeEnv({ currentTheme: "light" });
+    const { button, attrs } = makeEnv({ currentTheme: "light" });
     await loadTheme();
     assert.equal(button.textContent, "◑ escuro");
+    assert.equal(attrs["aria-label"], "Alternar para o tema escuro");
   });
 
   it("não grava no localStorage apenas ao carregar", async () => {
@@ -69,26 +73,28 @@ describe("theme.js", () => {
   });
 
   it("clique alterna o tema, atualiza o rótulo e persiste", async () => {
-    const { state, listeners, button } = makeEnv({ currentTheme: "dark" });
+    const { state, listeners, button, attrs } = makeEnv({ currentTheme: "dark" });
     await loadTheme();
 
     listeners.click(clickOn(button));
     assert.equal(state.theme, "light");
     assert.equal(button.textContent, "◑ escuro");
+    assert.equal(attrs["aria-label"], "Alternar para o tema escuro");
     assert.equal(state.stored, "light");
 
     listeners.click(clickOn(button));
     assert.equal(state.theme, "dark");
     assert.equal(button.textContent, "◐ claro");
+    assert.equal(attrs["aria-label"], "Alternar para o tema claro");
     assert.equal(state.stored, "dark");
   });
 
   it("clique em filho do botão também funciona", async () => {
-    const { state, listeners } = makeEnv({ currentTheme: "dark" });
+    const { state, listeners, button } = makeEnv({ currentTheme: "dark" });
     await loadTheme();
 
     // simula um clique cujo target é um filho que resolve para o botão via closest()
-    listeners.click({ target: { closest: (sel) => (sel === "#theme-toggle" ? {} : null) } });
+    listeners.click({ target: { closest: (sel) => (sel === "#theme-toggle" ? button : null) } });
     assert.equal(state.theme, "light");
   });
 
