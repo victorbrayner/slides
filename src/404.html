@@ -1,73 +1,73 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Página não encontrada — Materiais de Aula</title>
   <meta name="description" content="Página não encontrada nos materiais de aula do Prof. Victor Brayner." />
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <script>
+    // aplica o tema salvo antes do primeiro paint (evita flash de tema errado)
+    (function () {
+      try {
+        var theme = localStorage.getItem("theme");
+        if (theme !== "light" && theme !== "dark") {
+          theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark";
+        }
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/style.css" />
+  <script src="/theme.js" defer></script>
   <style>
-    :root {
-      color-scheme: dark;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    /* o 404 é servido em qualquer caminho: assets em URL absoluta;
+       aqui só o centralizador vertical, o resto vem do style.css */
     body {
-      font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
-      font-size: 15px;
-      line-height: 1.5;
-      color: #c0c0c0;
-      background-color: #222222;
-      min-height: 100vh;
       display: flex;
       align-items: center;
-      justify-content: center;
-      padding: 22px;
+      min-height: 100vh;
+    }
+
+    .wrap {
+      width: 100%;
     }
 
     main {
       max-width: 560px;
     }
 
-    h1 {
-      font-size: 22px;
-      font-weight: normal;
-      text-transform: uppercase;
+    main p {
       margin-bottom: 11px;
-    }
-
-    p {
-      color: #8f8f7a;
-      margin-bottom: 22px;
-    }
-
-    a {
-      display: inline-flex;
-      align-items: center;
-      min-height: 44px;
-      color: #ffa133;
-      text-decoration: none;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
-    a:focus-visible {
-      outline: 2px solid #ffa133;
-      outline-offset: 2px;
     }
   </style>
 </head>
 <body>
-  <main>
-    <h1>Erro 404</h1>
-    <p>// página não encontrada — o link pode estar desatualizado ou o material foi removido.</p>
-    <a href="/">← voltar para os materiais de aula</a>
-  </main>
+  <a class="skip" href="#conteudo">pular para o conteúdo</a>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Erro 404</h1>
+        <p class="subtitle">página não encontrada</p>
+      </div>
+      <button id="theme-toggle" type="button" aria-label="Alternar tema claro e escuro">◐ claro</button>
+    </header>
+
+    <main id="conteudo">
+      <p class="comment">// o link pode estar desatualizado ou o material foi removido.</p>
+      <p><a class="back" href="/">← voltar para os materiais de aula</a></p>
+    </main>
+
+    <footer>
+      <span>victor brayner · 2026</span>
+      <nav class="links">
+        <a href="https://github.com/victorbrayner/slides">github</a>
+        <a href="https://brayner.dev">brayner.dev</a>
+      </nav>
+    </footer>
+  </div>
 </body>
 </html>
