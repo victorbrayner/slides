@@ -69,7 +69,7 @@ describe("front-end (templates reais)", () => {
 
     // filtro progressivo: oculto sem JS e revelado por filter.js
     assert.ok(html.includes('<div class="filtro" hidden>'));
-    assert.ok(html.includes('<label for="filtro">filtrar</label>'));
+    assert.ok(html.includes('<label for="filtro" class="visually-hidden">filtrar</label>'));
     assert.ok(html.includes('<input id="filtro" type="search"'));
     assert.ok(html.includes('<script src="filter.js" defer></script>'));
     assert.ok(html.includes('id="filtro-status" role="status"'));
